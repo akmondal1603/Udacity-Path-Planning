@@ -208,8 +208,8 @@ int main() {
             ptsx.push_back(prev_car_x);
             ptsx.push_back(car_x);
             
-            ptsx.push_back(prev_car_y);
-            ptsx.push_back(car_y);
+            ptsy.push_back(prev_car_y);
+            ptsy.push_back(car_y);
           }
           // use the previous path's end point as starting point
           else
@@ -224,8 +224,8 @@ int main() {
             ptsx.push_back(ref_x_prev);
             ptsx.push_back(ref_x);
             
-            ptsx.push_back(ref_y_prev);
-            ptsx.push_back(ref_y);
+            ptsy.push_back(ref_y_prev);
+            ptsy.push_back(ref_y);
             
           }
           
