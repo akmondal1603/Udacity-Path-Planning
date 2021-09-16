@@ -9,17 +9,21 @@
 #include "json.hpp"
 #include "spline.h"
 
+
 // for convenience
 using nlohmann::json;
 using std::string;
 using std::vector;
 
-//const double lane_width 4.0;
-//#define lane_width 4.0
+//const double lane_width 4.0
+# define width 4
+# define left_lane 0
+# define right_lane 2
+# define default_lane 1
 
-int findlane(double d)
+int findlane(double d, double lane_wd)
 {
-  return (d/4);
+  return floor(d/lane_wd); //The floor() function in C++ returns the largest possible integer value which is less than or equal to the given argument.
 }
 
 int main() {
@@ -59,10 +63,11 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
   //start in lane 1
-  int lane = 1;
+  int lane = default_lane;
   
   //reference velocity to target, which has been taken slightly less than the max. speed (50 MPH)
   double ref_val=0.0;
+  double max_dv= 0.198;
 
   h.onMessage([&ref_val, &lane, &map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
                &map_waypoints_dx,&map_waypoints_dy]
@@ -120,9 +125,10 @@ int main() {
           
           for(int i=0; i<sensor_fusion.size();i++)
           {
+            double lane_width = 4.0;
             //car is in my lane
             float d=sensor_fusion[i][6]; // checking the 'd'  value of the 'i'th car; data format:[id, x, y, vx, vy, s, d]
-            int car_lane = findlane(d);
+            int car_lane = findlane(d, width);
             
               //if(d<(2+4*lane+2)&&d>(2+4*lane-2)) // for checking if the other car is in our lane; each lane is 4m wide, therefore want to check if it returns values between 4 and 8, ie. centre lane
                 // our car is in centre lane
@@ -156,36 +162,38 @@ int main() {
               }
           }
           
+          double ref_dv=0.0;
+          
           if(too_close)
           {
             //vehicle in front is too close: either change lane, provided it is safe to do so or slow down
-            if(((lane==1)||(lane==2)) && (!left_close))
+            if((lane!=left_lane) && (!left_close))
             {
               lane--;
             }
-            else if(((lane==1)||(lane==0)) && (!right_close))
+            else if((lane!=right_lane) && (!right_close))
             {
               lane++;
             }
             else
             {
-              ref_val-=0.224;
+              ref_dv -= 0.198;
             }
           }
           else
           {
-            if((lane==0) && (!right_close))
+            if((lane<default_lane) && (!right_close))
             {
               lane++;
             }
-            else if((lane==2) && (!left_close))
+            else if((lane>default_lane) && (!left_close))
             {
               lane--;
             }
             
             if (ref_val<49.5)
             {
-              ref_val+=0.224;
+              ref_dv += 0.198;
             }
           }
           
@@ -228,10 +236,7 @@ int main() {
             ptsy.push_back(ref_y);
             
           }
-          
-         
-
-          
+                
 
           /**
            * TODO: define a path made up of (x,y) points that the car will visit
@@ -284,7 +289,7 @@ int main() {
          
           
           //start with all of the previous path points from the last time
-          for(int i=0; i<previous_path_x.size(); i++)
+          for(int i=1; i<prev_size; i++)
           {
             next_x_vals.push_back(previous_path_x[i]);
             next_y_vals.push_back(previous_path_y[i]);
@@ -300,8 +305,18 @@ int main() {
           // fill up the rest of the path planner after filling it with previous points. It goes by iteration, therefore previous_pathx.size will not have the value 50 in it
           
           
-          for(int i=0; i<50-previous_path_x.size(); i++)
+          for(int i=1; i<50-prev_size; i++)
           {
+            ref_val+=ref_dv;
+            if (ref_val>49.5)
+            {
+              ref_val=49.5;
+            }
+            else if(ref_val< 0.224)
+            {
+              ref_val += 0.224;
+            }
+                
             double N=(target_dist/(0.02*ref_val/2.24)); // 2.24 for conversion from MPH to m/s; car will visit each point at 0.02 seconds
             double x_point = x_add_on+(target_x)/N;
             double y_point = s(x_point);  // spline function will tell the y coordinate w.r.t x value 
