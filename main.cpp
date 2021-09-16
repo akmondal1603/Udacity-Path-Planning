@@ -17,9 +17,7 @@ using std::vector;
 
 //const double lane_width 4.0
 # define width 4
-//# define left_lane 0
-//# define right_lane 2
-//# define default_lane1
+
 
 int findlane(double d, double lane_wd)
 {
@@ -67,8 +65,7 @@ int main() {
   
   //reference velocity to target, which has been taken slightly less than the max. speed (50 MPH)
   double ref_val=0.0;
-  double max_dv= 0.198;
-
+  
   h.onMessage([&ref_val, &lane, &map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
                &map_waypoints_dx,&map_waypoints_dy]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
@@ -161,9 +158,7 @@ int main() {
                 
               }
           }
-          
-          double ref_dv=0.0;
-          
+                  
           if(too_close)
           {
             //vehicle in front is too close: either change lane, provided it is safe to do so or slow down
@@ -177,7 +172,7 @@ int main() {
             }
             else
             {
-              ref_dv -= 0.224;
+              ref_val -= 0.224;
             }
           }
           else
@@ -193,7 +188,7 @@ int main() {
             
             if (ref_val<49.5)
             {
-              ref_dv += 0.224;
+              ref_val += 0.224;
             }
           }
           
@@ -236,25 +231,7 @@ int main() {
             ptsy.push_back(ref_y);
             
           }
-                
-
-          /**
-           * TODO: define a path made up of (x,y) points that the car will visit
-           *   sequentially every .02 seconds
-           */
-          
-          /*
-          double dist_inc=0.3 ;
-          for(int i=0; i<50; i++)
-          {
-            double next_s=car_s+(i+1)*dist_inc;
-            double next_d=6;  
-            vector<double> xy=getXY(next_s, next_d,  map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            next_x_vals.push_back(xy[0]);
-            next_y_vals.push_back(xy[1]);
-          }
-          */
-          
+                          
           // In frenet, add evenly 30m spaced points ahead of the starting reference
           
           vector<double> next_wp0=getXY(car_s+30, (2+4*lane),  map_waypoints_s, map_waypoints_x, map_waypoints_y);
@@ -307,7 +284,7 @@ int main() {
           
           for(int i=1; i<50-previous_path_x.size(); i++)
           {
-            ref_val+=ref_dv;
+           
             if (ref_val>49.5)
             {
               ref_val=49.5;
