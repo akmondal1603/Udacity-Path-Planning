@@ -17,9 +17,9 @@ using std::vector;
 
 //const double lane_width 4.0
 # define width 4
-# define left_lane 0
-# define right_lane 2
-# define default_lane 1
+//# define left_lane 0
+//# define right_lane 2
+//# define default_lane1
 
 int findlane(double d, double lane_wd)
 {
@@ -63,7 +63,7 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
   //start in lane 1
-  int lane = default_lane;
+  int lane = 1;
   
   //reference velocity to target, which has been taken slightly less than the max. speed (50 MPH)
   double ref_val=0.0;
@@ -167,33 +167,33 @@ int main() {
           if(too_close)
           {
             //vehicle in front is too close: either change lane, provided it is safe to do so or slow down
-            if((lane!=left_lane) && (!left_close))
+            if((lane!=0) && (!left_close))
             {
               lane--;
             }
-            else if((lane!=right_lane) && (!right_close))
+            else if((lane!=2) && (!right_close))
             {
               lane++;
             }
             else
             {
-              ref_dv -= 0.198;
+              ref_dv -= 0.224;
             }
           }
           else
           {
-            if((lane<default_lane) && (!right_close))
+            if((lane<1) && (!right_close))
             {
               lane++;
             }
-            else if((lane>default_lane) && (!left_close))
+            else if((lane>1) && (!left_close))
             {
               lane--;
             }
             
             if (ref_val<49.5)
             {
-              ref_dv += 0.198;
+              ref_dv += 0.224;
             }
           }
           
@@ -276,8 +276,8 @@ int main() {
             double shift_x=ptsx[i]-ref_x;
             double shift_y=ptsy[i]-ref_y;
             
-            ptsx[i]=(shift_x*cos(0-ref_yaw)-shift_y*sin(ref_yaw));
-            ptsy[i]=(shift_x*sin(0-ref_yaw)-shift_y*cos(ref_yaw));
+            ptsx[i]=(shift_x*cos(0-ref_yaw)-shift_y*sin(0-ref_yaw));
+            ptsy[i]=(shift_x*sin(0-ref_yaw)+shift_y*cos(0-ref_yaw));
           }            
             
           //create a spline
@@ -289,7 +289,7 @@ int main() {
          
           
           //start with all of the previous path points from the last time
-          for(int i=1; i<prev_size; i++)
+          for(int i=1; i<previous_path_x.size(); i++)
           {
             next_x_vals.push_back(previous_path_x[i]);
             next_y_vals.push_back(previous_path_y[i]);
@@ -305,7 +305,7 @@ int main() {
           // fill up the rest of the path planner after filling it with previous points. It goes by iteration, therefore previous_pathx.size will not have the value 50 in it
           
           
-          for(int i=1; i<50-prev_size; i++)
+          for(int i=1; i<50-previous_path_x.size(); i++)
           {
             ref_val+=ref_dv;
             if (ref_val>49.5)
