@@ -137,21 +137,10 @@ int main() {
               double check_car_s=sensor_fusion[i][5]; // checking the 's'  value of the 'i'th car in centre lane; data format:[id, x, y, vx, vy, s, d]
                 
               check_car_s+=((double)prev_size*0.02*check_speed); //checking the speed of car in future mor the 's' value, using previous points
-                //check 's' values greater than our car and 's' gap, if it is in front of us
-                /*
-                if((check_car_s>car_s) && ((check_car_s-car_s)<30))
-                {
-                  // lowering speed or change in lane
-                  too_close = true;
-                   //lane change: front vehicle is slow and and left side its safe to move, considering we are at middle lane
-                  if(lane>0)
-                  {
-                    lane=0;
-                  }
-          
-                  
-                }
-                */
+              //check 's' values greater than our car and 's' gap, if it is in front of us
+              // lowering speed or change in lane
+              //lane change: front vehicle is slow and and left side its safe to move, considering we are at middle lane
+              
               too_close |= ((car_lane==lane) && (check_car_s>car_s) && (check_car_s<car_s+30));
               left_close |= ((car_lane==lane-1) && (check_car_s>car_s-30) && (check_car_s<car_s+30));
               right_close |= ((car_lane==lane+1) && (check_car_s>car_s-30) && (check_car_s<car_s+30));
@@ -229,7 +218,6 @@ int main() {
             
             ptsy.push_back(ref_y_prev);
             ptsy.push_back(ref_y);
-            
           }
                           
           // In frenet, add evenly 30m spaced points ahead of the starting reference
@@ -280,8 +268,7 @@ int main() {
           double x_add_on=0;
           
           // fill up the rest of the path planner after filling it with previous points. It goes by iteration, therefore previous_pathx.size will not have the value 50 in it
-          
-          
+           
           for(int i=1; i<50-previous_path_x.size(); i++)
           {
            
